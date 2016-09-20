@@ -31,9 +31,11 @@ app.get('/todos', function(req, res) {
         };
     }
 
-    db.todo.findAll({where: where}).then(function (todos) {
+    db.todo.findAll({
+        where: where
+    }).then(function(todos) {
         res.json(todos);
-    }, function (e) {
+    }, function(e) {
         res.status(500).send();
     });
 });
@@ -42,13 +44,13 @@ app.get('/todos', function(req, res) {
 app.get('/todos/:id', function(req, res) {
     var todoId = parseInt(req.params.id, 10);
 
-    db.todo.findById(todoId).then(function (todo) {
+    db.todo.findById(todoId).then(function(todo) {
         if (!!todo) {
             res.json(todo.toJSON());
         } else {
             res.status(404).send();
         }
-    }, function (e) {
+    }, function(e) {
         res.status(500).send();
     });
 });
@@ -57,9 +59,9 @@ app.get('/todos/:id', function(req, res) {
 app.post('/todos', function(req, res) {
     var body = _.pick(req.body, 'description', 'completed');
 
-    db.todo.create(body).then(function (todo) {
+    db.todo.create(body).then(function(todo) {
         res.json(todo.toJSON());
-    }, function (e) {
+    }, function(e) {
         res.status(400).json(e);
     });
 });
@@ -69,21 +71,20 @@ app.delete('/todos/:id', function(req, res) {
     var todoId = parseInt(req.params.id, 10);
 
     db.todo.destroy({
-       where: {
-           id: todoId
-       }
-    }).then(function (rowsDeleted){
-        if (rowsDeleted === 0){
+        where: {
+            id: todoId
+        }
+    }).then(function(rowsDeleted) {
+        if (rowsDeleted === 0) {
             res.status(404).json({
-                error: 'no todo with id'
-            })
+                error: 'No todo with id'
+            });
         } else {
             res.status(204).send();
         }
-    }, function(e){
+    }, function() {
         res.status(500).send();
     });
-
 });
 
 // PUT /todos/:id
@@ -98,36 +99,32 @@ app.put('/todos/:id', function(req, res) {
 
     if (body.hasOwnProperty('description')) {
         attributes.description = body.description;
-        }
+    }
 
     db.todo.findById(todoId).then(function(todo) {
         if (todo) {
-            todo.update(attributes).then(function (todo) {
+            todo.update(attributes).then(function(todo) {
                 res.json(todo.toJSON());
-            }, function (e){
+            }, function(e) {
                 res.status(400).json(e);
             });
         } else {
-            res.status(404).send()
+            res.status(404).send();
         }
-    }, function () {
-        res.status(500).send()
+    }, function() {
+        res.status(500).send();
     });
-
 });
 
-//POST /user
-app.post('/users',function (req, res){
+app.post('/users', function (req, res) {
     var body = _.pick(req.body, 'email', 'password');
 
-    db.user.create(body).then(function (user){
-        res.json(user.toJSON());
+    db.user.create(body).then(function (user) {
+        res.json(user.toPublicJSON());
     }, function (e) {
         res.status(400).json(e);
-    })
-
+    });
 });
-
 
 db.sequelize.sync().then(function() {
     app.listen(PORT, function() {
